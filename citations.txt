@@ -1,0 +1,4 @@
+Code sample for EM algorithm - https://stats.stackexchange.com/questions/55132/em-algorithm-manually-implemented
+skipping lines in R - https://stackoverflow.com/questions/21222113/how-to-read-first-1000-lines-of-csv-file-into-r
+setting headers in R - https://stackoverflow.com/questions/14021675/how-to-add-header-to-a-dataset-in-r
+declare vectors in R -https://stackoverflow.com/questions/22104774/how-to-initialize-a-vector-with-fixed-length-in-r

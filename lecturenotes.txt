@@ -1,0 +1,38 @@
+15:50 - start of derivation
+
+k is the number of bumps
+n is the number of datapoints
+pi's are probability of getting each of the "bumps" or clusters
+mu is the mean of the 'bumps', i.e. the center of mass
+for each x, you want to recover the location of each bump (mu) and the probability of each bump (pi)
+
+DIFFICULT: find log likelihood of (mu's and pi's) usually we put these together and call them theta
+
+TRICK (21:26):  this would all be easy to do that difficult thing if we knew the which cluster each x came from
+	PRETEND that we know which cluster each x comes from
+	New variable delta, for every x there are k delta values, delta is a k dimmensional vector
+	delta(i,j)= { 0 
+				{ 1 if x(i) comes from k(j)
+				
+Useful equation at 25:00
+Log likelihood breakdown at 33:00
+
+39:00 how to represent x - vector of word counts
+
+x is a vector of counts, of length num_words (like 12000 in our case)
+
+45:00 setting up probability model
+
+p(j) is a probability vector of the same length as x (like 12000 in our case)
+
+56:00 STRATEGY 
+	initialize by choosing k documents at random
+	initialize weights to 1/k (equally likely to start)
+	
+	theta^n = p(delta(i) | theta^n, x)
+	
+1:00 Q function is the E step
+
+theta^(n+1) = argmax(theta) [Q(theta| theta^n]  (this is the m step)
+
+1:07 E-Step explained
