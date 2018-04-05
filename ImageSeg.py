@@ -51,6 +51,9 @@ def cluster_pixels(points, k):
 
     predictions, centers = initialize(points, k)
 
+    #comment this out
+    return predictions, centers
+
     print("   Refining with EM algorithm")
 
     #setup
