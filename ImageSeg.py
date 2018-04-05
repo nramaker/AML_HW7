@@ -8,8 +8,7 @@ def reduce_image(image, segments):
     im = Image.open(image)
 
     # vectorize the pixels into RGB values
-    pixels = get_pixels_from_image(im)
-    #pixel_vectors = rgb_vectorize_pixels(pixels)
+    pixels, width, height = get_pixels_from_image(im)
     
     # cluster the vectors
     cluster_assignments, cluster_centers=cluster_pixels(pixels, segments)
@@ -21,18 +20,30 @@ def reduce_image(image, segments):
     replaced_pixels = update_pixels(cluster_assignments, mean_colors)
 
     #show final image
-    # updated = Image.fromarray(replaced_pixels)
-    # updated.show()
+    show_image(replaced_pixels, width,height)
+
     im.show()
+
+def show_image(image_vector, width, height):
+    redarr = np.asarray(column(image_vector, 0))
+    greenarr = np.asarray(column(image_vector,1))
+    bluearr = np.asarray(column(image_vector,2))
+    rgbArray = np.zeros((height,width,3), 'uint8')
+    rgbArray[..., 0] = redarr.reshape((height,-1))
+    rgbArray[..., 1] = greenarr.reshape((height,-1))
+    rgbArray[..., 2] = bluearr.reshape((height,-1))
+    image = Image.fromarray(rgbArray)
+    image.show()
+
+def column(matrix, i):
+    return [row[i] for row in matrix]
 
 def get_pixels_from_image(image):
     print("### Extracting pixels from Image")
-    pixels = list(image.getdata())
+    pixels = image.getdata()
     width, height = image.size
     print("   Image is {} by {}".format(width,height))
-    # pixels = [pixels[i * width:(i + 1) * width] for i in range(height)]
-    # print(np.array(pixels).shape)
-    return list(pixels)
+    return list(pixels), width, height
 
 
 def cluster_pixels(pixel_vectors, k):
@@ -44,26 +55,22 @@ def cluster_pixels(pixel_vectors, k):
     kmeans = KMeans(n_clusters=k, random_state=0).fit(X)
     predictions = kmeans.predict(X)
     centers = kmeans.cluster_centers_
-    # print(centers)
 
     print("   Refining with EM algorithm")
     return predictions, centers
 
 def calculate_mean_colors(pixel_vectors, cluster_assignments, k):
     print("### Calculating new color assignmenets for {} clusters.".format(k))
-    # print(cluster_assignments[0:200])
     means= []
     for i in range(0,k):
         mask = [(pix==i) for pix in cluster_assignments]
-        # print(mask)
+
         num_pixels = sum(mask)
         print("   found {} pixels in cluster {}".format(num_pixels,i))
         pixels_in_cluster= np.asarray([pixel_vectors[j] for j in range(len(pixel_vectors)) if mask[j]])
-        # pixels_in_cluster = np.asarray(pixels_in_cluster)
         mean_color = sum(pixels_in_cluster)/num_pixels
         print("   mean_color for cluster {} : {}".format(i,mean_color))
-        means.append(mean_color)
-    print(means)
+        means.append(np.array(mean_color))
     return means
 
 def update_pixels(cluster_assignments, mean_colors):
@@ -72,14 +79,15 @@ def update_pixels(cluster_assignments, mean_colors):
     for i in range(0, len(cluster_assignments)):
         cluster = cluster_assignments[i]
         color = mean_colors[cluster]
-        modified_pixels.append(color)
-    return modified_pixels
+        modified_pixels.append(list(color))
+    # print("   First Modified pixel {}".format(modified_pixels[0]))
+    return np.asarray(modified_pixels)
 
 if __name__ == "__main__":
     print("##### HW7 Image Segmentation #####")
 
-    reduce_image("./images/RobertMixed03.jpg", 10)
-    # reduce_image("./images/RobertMixed03.jpg", 20)
+    # reduce_image("./images/RobertMixed03.jpg", 10)
+    reduce_image("./images/RobertMixed03.jpg", 20)
     # reduce_image("./images/RobertMixed03.jpg", 50)
     # reduce_image("./images/smallstrelitzia.jpg", 10)
     # reduce_image("./images/smallstrelitzia.jpg", 20)
