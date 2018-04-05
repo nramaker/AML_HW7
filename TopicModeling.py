@@ -1,12 +1,23 @@
+import pandas as pd
+import numpy as np
+
 k = 30
 
 def load_vocab():
-    #TODO: implement load_vocab
-    return []
+    file = "./NIPS/vocab.nips.txt"
+    print("   Loading vocab from file: {}".format(file))
+    data = pd.read_csv(file)
+    return data
 
 def load_data():
-    #TODO: implement load_data
-    return [], 0,0,0
+    file = "./NIPS/docword.nips.txt"
+    print("   Loading vocab from file: {}".format(file))
+    head = pd.read_csv(file, header=None, nrows=3).as_matrix()
+    d = head[0]
+    n = head[1]
+    t = head[2]
+    data = pd.read_csv(file, header=None, skiprows=3, sep=' ').as_matrix()
+    return data, d, n, t
 
 def expectation(points, cluster_centers, cluster_weights):
     #TODO: implement estimation
@@ -25,8 +36,9 @@ def show_table(word_probs):
     pass
 
 def measure_change(old_mus, new_mus):
-    #TODO measure change function
-    return 0.0
+    dist = numpy.linalg.norm(new_mu-old_mu)
+    #should we take the average change?
+    return dist
 
 if __name__ == "__main__":
     print("##### HW7 Topic Modeling #####")
@@ -58,6 +70,7 @@ if __name__ == "__main__":
         mus, pis = maximization(word_counts, w_ij, n)
 
         change = measure_change(old_mus, mus)
+        print("   Detected cluster center change of {}".format(change))
         if(change < min_change):
             converged=True
             print("   EM algorithm has converged, stopping.")
