@@ -54,13 +54,14 @@ def cluster_pixels(points, k):
     print("   Refining with EM algorithm")
 
     #setup
-    max_iter = 100
+    max_iter = 10
     min_change = 0.01
     
     #initial values
-    w_ij = matrix(0.0, len(points), k)
+    #w_ij = matrix(1/k, len(points), k)
+    w_ij = [[1/k] * len(points)] * k
     mu = centers
-    pi = calc_initial_weights(cluster_assignments, k)
+    pi = calc_initial_weights(predictions, k)
 
     iteration = 0
     converged = False
@@ -68,11 +69,11 @@ def cluster_pixels(points, k):
         print("EM iteration {}".format(iteration))
 
         #E step
-        w_ij = expectation(w_ij, mu)
+        w_ij = expectation(points, mu, pi)
 
         #M step
         old_mu = mu
-        mu, pi = maximization(points, mu, pi )
+        mu, pi = maximization(points, w_ij)
 
         #measure change
         change = measure_center_change(old_mu, mu)
@@ -85,29 +86,44 @@ def cluster_pixels(points, k):
     print("   Assigning Clusters...")
     return predictions, centers
 
-def expectation(points, cluster_centers, cluster_weights);
+def expectation(points, cluster_centers, cluster_weights):
+    print("   Estimation...")
     # assign every data point to its most likely cluster
-    for i in range(dataFrame.shape[0]):
-        x = dataFrame['x'][i]
-        y = dataFrame['y'][i]
-        p_cluster1 = prob([x, y], list(parameters['mu1']), list(parameters['sig1']), parameters['lambda'][0] )
-        p_cluster2 = prob([x, y], list(parameters['mu2']), list(parameters['sig2']), parameters['lambda'][1] )
-        if p_cluster1 > p_cluster2:
-        dataFrame['label'][i] = 1
-        else:
-        dataFrame['label'][i] = 2
+    
     return dataFrame
 
 def maximization(points, w_ij, n):
-
+    print("   Maximization...")
     new_mu = []
     new_pi = []
+
+    for j in range(0, 2):
+        print("w_ij[{}] = {}".format(j, column(w_ij,j)))
+        sum_wi = sum(column(w_ij,j))
+        print("sum_wi {}".format(sum_wi))
+
+        #calculate new centers
+        mu = sum(column(points,j)*sum_wi)/sum_wi
+        print("new mu[{}] = {}".format(j, mu))
+        new_mu.append(mu)
+
+        #calculate new weights
+        pi = sum_wi/n 
+        print("new pi[{}] = {}".format(j, pi))
+        new_pi.append(pi)
+    
     return new_mu, new_pi
 
+def logsumexp(X):
+    x_max = X.max(1)
+    return x_max + np.log(np.exp(X - x_max[:, None]).sum(1))
+
 def measure_center_change(old_mu, new_mu):
-    return 0.001
+    dist = numpy.linalg.norm(new_mu-old_mu)
+    return dist
 
 def calc_initial_weights(cluster_assignments, k):
+    print("   Calculating initial weights...")
     weights =[]
     N = len(cluster_assignments)
     for i in range(0, k):
