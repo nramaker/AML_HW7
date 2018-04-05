@@ -62,7 +62,7 @@ def cluster_pixels(points, k):
     
     #initial values
     #w_ij = matrix(1/k, len(points), k)
-    w_ij = [[1/k] * len(points)] * k
+    w_ij = [[1/k] * len(points)] * k  #this probably isn't right.  Set the probability to some non zero number
     mu = centers
     pi = calc_initial_weights(predictions, k)
 

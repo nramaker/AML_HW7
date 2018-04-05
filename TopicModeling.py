@@ -19,13 +19,19 @@ def load_data():
     data = pd.read_csv(file, header=None, skiprows=3, sep=' ').as_matrix()
     return data, d, n, t
 
+def build_word_counts(data, d, n):
+    print("   Building word_count vectors.")
+    word_counts = [[0] * d] * n
+    #TODO build word_counts
+    return word_counts
+
 def expectation(points, cluster_centers, cluster_weights):
     #TODO: implement estimation
     return []
 
 def maximization(points, w_ij, n):
     #TODO implement maximization
-    return [], []
+    return np.asarray([]), np.asarray([])
 
 def show_histogram(weights):
     #TODO display histogram
@@ -36,7 +42,7 @@ def show_table(word_probs):
     pass
 
 def measure_change(old_mus, new_mus):
-    dist = numpy.linalg.norm(new_mu-old_mu)
+    dist = np.linalg.norm(new_mus-old_mus)
     #should we take the average change?
     return dist
 
@@ -45,13 +51,16 @@ if __name__ == "__main__":
 
     #load data from files
     vocab = load_vocab()
-    word_counts, d, n, t = load_data()
+    data, d, n, t = load_data()
+
+    #organize the data into word counts per document
+    word_counts = build_word_counts(data, d, n)
 
     #initialize variables
     #TODO: better initialization
     w_ij  = []
     mus = []
-    pis = []
+    pis = [[1/k]] * k
 
     #perform clustering
     max_iters = 1000
