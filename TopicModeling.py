@@ -13,23 +13,29 @@ def load_data():
     file = "./NIPS/docword.nips.txt"
     print("   Loading vocab from file: {}".format(file))
     head = pd.read_csv(file, header=None, nrows=3).as_matrix()
-    d = head[0]
-    n = head[1]
-    t = head[2]
+    d = head[0][0]
+    n = head[1][0]
+    t = head[2][0]
     data = pd.read_csv(file, header=None, skiprows=3, sep=' ').as_matrix()
     return data, d, n, t
 
-def build_word_counts(data, d, n):
+def build_word_counts(data, d, t):
     print("   Building word_count vectors.")
-    word_counts = [[0] * d] * n
-    #TODO build word_counts
+    word_counts = np.zeros((d, t))
+
+    for i in range (0, t):
+        row = data[i]
+        docID = row[0]
+        wordId = row[1]
+        count = row[2]
+        word_counts[docID-1][wordId-1] = word_counts[docID-1][wordId-1] + count
     return word_counts
 
 def expectation(points, cluster_centers, cluster_weights):
     #TODO: implement estimation
     return []
 
-def maximization(points, w_ij, n):
+def maximization(points, w_ij, t):
     #TODO implement maximization
     return np.asarray([]), np.asarray([])
 
@@ -54,7 +60,7 @@ if __name__ == "__main__":
     data, d, n, t = load_data()
 
     #organize the data into word counts per document
-    word_counts = build_word_counts(data, d, n)
+    word_counts = build_word_counts(data, d, t)
 
     #initialize variables
     #TODO: better initialization
