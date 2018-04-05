@@ -36,3 +36,16 @@ p(j) is a probability vector of the same length as x (like 12000 in our case)
 theta^(n+1) = argmax(theta) [Q(theta| theta^n]  (this is the m step)
 
 1:07 E-Step explained
+
+VIDEO 2
+9:00 Q function for real
+good slide at 22:00
+Q function greatly simplified at 34:00
+Q function in actual numbers 46:30
+
+52:00 W(i,j) formula
+
+TRICK for underflow (56:00)
+
+Topic model E-step (59:30)
+M-Step simplified (1:05:45)

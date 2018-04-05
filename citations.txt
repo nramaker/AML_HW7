@@ -2,3 +2,6 @@ Code sample for EM algorithm - https://stats.stackexchange.com/questions/55132/e
 skipping lines in R - https://stackoverflow.com/questions/21222113/how-to-read-first-1000-lines-of-csv-file-into-r
 setting headers in R - https://stackoverflow.com/questions/14021675/how-to-add-header-to-a-dataset-in-r
 declare vectors in R -https://stackoverflow.com/questions/22104774/how-to-initialize-a-vector-with-fixed-length-in-r
+
+
+get pixels from image - https://stackoverflow.com/questions/1109422/getting-list-of-pixel-values-from-pil
