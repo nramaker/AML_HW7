@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 
 #TODO: set this back to 30. Setting k=2 so that it takes less time while we iterate
 #k = 30
-k=5
+k=3
 
 def load_vocab():
     file = "./NIPS/vocab.nips.txt"
@@ -28,13 +28,12 @@ def load_data():
     return nips.as_matrix(), d, n, t
 
 def show_histogram(weights):
-    #TODO display histogram
     plt.figure(1)
     
     indexes = list(range(0,len(weights)))
     print("indexes : {}".format(indexes))
     print("weights : {}".format(weights))
-    plt.plot(indexes, weights, label=indexes)
+    plt.bar(indexes, weights, label=indexes)
      
     plt.xscale('linear')
     plt.yscale('linear')
@@ -79,7 +78,14 @@ if __name__ == "__main__":
     
     #these are the random initial cluster centers
     np.random.seed(1)
-    mus = np.asarray([word_counts[np.random.randint(0, cols-1)]]*k) #randomly choose k documents as centroids
+    
+    mus = []
+    #randomly choose k documents as centroids
+    for i in range(0, k):
+        mus.append(word_counts[np.random.randint(0, rows)])
+    mus = np.asarray(mus)
+    print("sum cluster 0 {}".format(sum(mus[0])))
+    print("sum cluster 1 {}".format(sum(mus[1])))
 
     #these are the inital cluster weights
     pis = [[1/k]] * k  #equally weighted clusters to start
