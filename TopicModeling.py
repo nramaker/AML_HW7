@@ -21,8 +21,10 @@ def load_data():
     t = head[2][0]
     nips = pd.read_csv(data_file,delimiter=' ')
     nips = nips.pivot(columns='wordid', index='docid', values='count')
-    nips.fillna(0.001,inplace=True)
-    nips.head()
+    # print(nips)
+    #nips.fillna(0.001,inplace=True)
+    nips.fillna(.001, inplace=True)
+    # print(nips)
     return nips.as_matrix(), d, n, t
 
 def show_histogram(weights):
@@ -34,7 +36,7 @@ def show_table(word_probs):
     pass
 
 def doc_word_freq(docid,wordid,data):
-    return(data[wordid,docid])
+    return(data[wordid][docid])
 
 def topic_word_freq(topicid,wordid,topics):
     return(topics[topicid,wordid]) 
@@ -44,8 +46,8 @@ def doc_likelihood(docid, topic, data):
     words = list(range(0,data.shape[0]))
     adw = [np.round(doc_word_freq(docid,wordid,data)) for wordid in words]
     likelihood = 1
-    for word in range(data.shape[1]):
-        likelihood *= (topic)^(np.int(adw[word]))
+    for word in range(data.shape[0]):
+        likelihood *= (topic)**(adw[word-1])
     return(likelihood)
 
 if __name__ == "__main__":
@@ -59,7 +61,6 @@ if __name__ == "__main__":
     cols = word_counts.shape[1]  # documents indexes
 
     #initialize variables
-    #TODO: better initialization
     w_ij  = np.zeros((k,rows))
     
     #these are the random initial cluster centers
@@ -88,11 +89,15 @@ if __name__ == "__main__":
         # E - step
         print("   E-step")
         priors_probs = np.zeros((k,rows))
+        # print(priors_probs.shape)
+
+        #TODO: Delete this block, it's debug code.
 
         print("     Calculating Priors.")
-        for i in range(0,k-1):
-            for j in range(0,rows-1):
-                priors_probs[i,j] = multinomial.pmf(word_counts[j,], sum(word_counts[j,]), mus[i,])
+        for i in range(0,k-1):  # i is the topic
+            print("     Priors for cluster={}".format(i))
+            for j in range(0,rows-1):  #j is the document
+                priors_probs[i,j] = doc_likelihood(j, np.asarray(pis)[i], word_counts)
     
         w_ij_new = np.zeros((k,rows))
         sumcp = np.dot(np.asarray(pis).T, priors_probs)
