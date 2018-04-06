@@ -3,7 +3,9 @@ import numpy as np
 from random import *
 from scipy.stats import multinomial
 
-k = 30
+#TODO: set this back to 30. Setting k=2 so that it takes less time while we iterate
+#k = 30
+k=2
 
 def load_vocab():
     file = "./NIPS/vocab.nips.txt"
@@ -89,14 +91,11 @@ if __name__ == "__main__":
         # E - step
         print("   E-step")
         priors_probs = np.zeros((k,rows))
-        # print(priors_probs.shape)
-
-        #TODO: Delete this block, it's debug code.
 
         print("     Calculating Priors.")
-        for i in range(0,k-1):  # i is the topic
+        for i in range(0,k):  # i is the topic
             print("     Priors for cluster={}".format(i))
-            for j in range(0,rows-1):  #j is the document
+            for j in range(0,rows):  #j is the document
                 priors_probs[i,j] = doc_likelihood(j, np.asarray(pis)[i], word_counts)
     
         w_ij_new = np.zeros((k,rows))
@@ -106,29 +105,19 @@ if __name__ == "__main__":
         
         #new assignments
         print("     Calculating New Assignments.")
-        for i in range(0,k-1):
-            print("Multiplying pis[{}].T = {}".format(i, np.asarray(pis[i]).T))
-            print("  Times prior_probs[{},] = {}".format(i, priors_probs[i,]))
-            print("  Then dividing by sumcp = {}".format(sumcp))
+        for i in range(0,k):
             w_ij_new[i,] = (np.asarray(pis[i]).T * priors_probs[i,])/sumcp
-            print("w_ij_new[{}] = {}".format(i, w_ij_new[i]))
         
         # M - step
         print("   M-Step")
         old_mus = mus
-        for i in range(0, k-1):
-            pis[i] = sum(w_ij[i,])/rows
-            mus[i,] = (np.dot(w_ij[i,], word_counts))/sum(word_counts[i,])
+        for i in range(0, k):
+            pis[i] = sum(w_ij_new[i,])/rows
+            mus[i,] = (np.dot(w_ij_new[i,], word_counts))/sum(word_counts[i,])
             mus[i,] = mus[i,]/n #normalize 
 
         print("  Measuring Tau")
 
-        sum1 = sum(w_ij[0])
-        print("sum1 {}".format(sum1))
-        sum2 = sum(w_ij_new[0])
-        print("sum2 {}".format(sum2))
-
-        #TODO: there is a defect here, tau evaluates to NaN
         tau = np.linalg.norm(w_ij-w_ij_new)
         print("   Detected probabilities change of {}".format(tau))
         if(tau < min_tau):
