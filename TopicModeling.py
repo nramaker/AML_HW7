@@ -1,11 +1,12 @@
 import pandas as pd
 import numpy as np
 from random import *
-from scipy.stats import multinomial
+#from scipy.stats import multinomial
+import matplotlib.pyplot as plt
 
 #TODO: set this back to 30. Setting k=2 so that it takes less time while we iterate
 #k = 30
-k=2
+k=5
 
 def load_vocab():
     file = "./NIPS/vocab.nips.txt"
@@ -23,14 +24,25 @@ def load_data():
     t = head[2][0]
     nips = pd.read_csv(data_file,delimiter=' ')
     nips = nips.pivot(columns='wordid', index='docid', values='count')
-    # print(nips)
-    #nips.fillna(0.001,inplace=True)
     nips.fillna(.001, inplace=True)
-    # print(nips)
     return nips.as_matrix(), d, n, t
 
 def show_histogram(weights):
     #TODO display histogram
+    plt.figure(1)
+    
+    indexes = list(range(0,len(weights)))
+    print("indexes : {}".format(indexes))
+    print("weights : {}".format(weights))
+    plt.plot(indexes, weights, label=indexes)
+     
+    plt.xscale('linear')
+    plt.yscale('linear')
+        
+    plt.title('Likelihood of Each Topic Being Chosen')
+    # plt.legend()
+    plt.grid(True)
+    plt.show()
     pass
 
 def show_table(word_probs):
@@ -92,9 +104,8 @@ if __name__ == "__main__":
         print("   E-step")
         priors_probs = np.zeros((k,rows))
 
-        print("     Calculating Priors.")
         for i in range(0,k):  # i is the topic
-            print("     Priors for cluster={}".format(i))
+            print("     Calculating Priors for Cluster {}".format(i))
             for j in range(0,rows):  #j is the document
                 priors_probs[i,j] = doc_likelihood(j, np.asarray(pis)[i], word_counts)
     
@@ -116,7 +127,7 @@ if __name__ == "__main__":
             mus[i,] = (np.dot(w_ij_new[i,], word_counts))/sum(word_counts[i,])
             mus[i,] = mus[i,]/n #normalize 
 
-        print("  Measuring Tau")
+        print("   Measuring Tau")
 
         tau = np.linalg.norm(w_ij-w_ij_new)
         print("   Detected probabilities change of {}".format(tau))
@@ -126,7 +137,7 @@ if __name__ == "__main__":
         w_ij=w_ij_new
         iteration+=1
     
-    show_histogram(pis)
+    show_histogram(np.asarray(pis).T)
     show_table(w_ij)
 
         
