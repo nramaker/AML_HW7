@@ -63,37 +63,68 @@ def doc_likelihood(docid, topic, data):
         likelihood *= (topic)**(adw[word-1])
     return(likelihood)
 
+def e_step(data,mu,k,pi):
+    
+    # data is a dxn numpy array of word counts
+    # mu is a kxd numpy array of cluster centroids
+    # k is the cluster number
+    # pi is a kx1 array of cluster membership probabilities
+    
+    n = data.shape[0]
+    d = data.shape[1]
+    
+    h1 = np.multiply(data,data)
+    h1 = np.matmul(h1,np.ones((d,k)))
+    
+    h2 = np.matmul(np.ones((n,d)), np.multiply(mu,mu).T)
+    
+    h3 = np.matmul(data,mu.T)
+    
+    H = -0.5*(np.subtract(np.add(h1,h2),2*h3))
+    P = np.matmul(np.ones((n,1)),pi.T)
+    E = np.multiply(np.exp(H),P)
+    F = np.matmul(E,np.ones((k,k)))
+    F = np.add(F,0.01)
+    W = np.divide(E,F)
+    return(W)
+
+def m_step(W,data):
+    # W is a nxk array of document likelihoods (given cluster)
+    # data is a dxn array of word counts
+    D = np.matmul(W.T,data)
+    G = np.matmul(W.T,np.ones((n,d)))
+    mu_new = np.divide(D,G)
+    return(mu_new)
+    
+def evalulate(mu_old,mu_new,threshold):
+    diff = np.subtract(mu_new,mu_old)
+    #diff = np.linalg.norm(diff)
+    print("   Detected change of {}".format(diff))
+    if diff <= threshold:
+        return(1)
+    else:
+        return(0)
+
 if __name__ == "__main__":
     print("##### HW7 Topic Modeling #####")
 
     #load data from files
     vocab = load_vocab()
-    word_counts, d, n, t = load_data()
-
-    rows = word_counts.shape[0]  # word indexes per document
-    cols = word_counts.shape[1]  # documents indexes
+    nips_data, d, n, t = load_data() # use old load method
 
     #initialize variables
-    w_ij  = np.zeros((k,rows))
-    
-    #these are the random initial cluster centers
-    np.random.seed(1)
-    
-    mus = []
-    #randomly choose k documents as centroids
-    for i in range(0, k):
-        mus.append(word_counts[np.random.randint(0, rows)])
-    mus = np.asarray(mus)
-    print("sum cluster 0 {}".format(sum(mus[0])))
-    print("sum cluster 1 {}".format(sum(mus[1])))
-
-    #these are the inital cluster weights
-    pis = [[1/k]] * k  #equally weighted clusters to start
+    d = nips_data.shape[1]
+    n = nips_data.shape[0]
+    topic_centers = np.random.random(k)
+    mu = topic_centers.reshape((k,1))
+    mus = np.random.random(k*d)
+    mus = mus.reshape((k,d))
+    pi = np.ones((k,1))*1/k
 
 
     #perform clustering
-    max_iters = 1000
-    min_tau = 0.001
+    max_iters = 50
+    threshold = 0.001
 
     iteration = 0
     converged = False
@@ -108,39 +139,16 @@ if __name__ == "__main__":
 
         # E - step
         print("   E-step")
-        priors_probs = np.zeros((k,rows))
-
-        for i in range(0,k):  # i is the topic
-            print("     Calculating Priors for Cluster {}".format(i))
-            for j in range(0,rows):  #j is the document
-                priors_probs[i,j] = doc_likelihood(j, np.asarray(pis)[i], word_counts)
-    
-        w_ij_new = np.zeros((k,rows))
-        sumcp = np.dot(np.asarray(pis).T, priors_probs)
-
-        sumcp = sumcp + 0.0001 #avoid divide by zero ?
-        
-        #new assignments
-        print("     Calculating New Assignments.")
-        for i in range(0,k):
-            w_ij_new[i,] = (np.asarray(pis[i]).T * priors_probs[i,])/sumcp
+        W = e_step(data=nips_data,k=3,mu=mus,pi=pi)
         
         # M - step
         print("   M-Step")
-        old_mus = mus
-        for i in range(0, k):
-            pis[i] = sum(w_ij_new[i,])/rows
-            mus[i,] = (np.dot(w_ij_new[i,], word_counts))/sum(word_counts[i,])
-            mus[i,] = mus[i,]/n #normalize 
+        mu_old = mus
+        mus = m_step(data=nips_data,W=W)
 
-        print("   Measuring Tau")
-
-        tau = np.linalg.norm(w_ij-w_ij_new)
-        print("   Detected probabilities change of {}".format(tau))
-        if(tau < min_tau):
-            converged=True
-            print("   EM algorithm has converged, stopping.")
-        w_ij=w_ij_new
+        #Measure
+        converged = evalulate(mu_new=mus,mu_old=mu_old, threshold=threshold)
+        
         iteration+=1
     
     show_histogram(np.asarray(pis).T)
