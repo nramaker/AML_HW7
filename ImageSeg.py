@@ -1,6 +1,9 @@
 from PIL import Image
 import numpy as np
 from sklearn.cluster import KMeans
+from scipy.stats import norm
+import operator
+
 
 def reduce_image(image, segments):
     print("### Reducing {} into {} color segments.".format(image, segments))
@@ -45,14 +48,23 @@ def get_pixels_from_image(image):
     print("   Image is {} by {}".format(width,height))
     return list(pixels), width, height
 
+# probability that a point came from a Guassian with given parameters
+# note that the covariance must be diagonal for this to work
+#def prob(val, mu, sig, lam):
+def prob(val, mu, lam):
+  p = lam
+  for i in range(len(val)):
+    p *= norm.pdf(val[i], mu[i])
+    #p *= norm.pdf(val[i], mu[i], sig[i][i])
+  return p
 
 def cluster_pixels(points, k):
     print("### Performing EM clustering, k={}".format(k))
 
     predictions, centers = initialize(points, k)
 
-    #comment this out
-    return predictions, centers
+    #uncomment this line to return straight kmeans clusters and centers
+    #return predictions, centers
 
     print("   Refining with EM algorithm")
 
@@ -63,8 +75,8 @@ def cluster_pixels(points, k):
     #initial values
     #w_ij = matrix(1/k, len(points), k)
     w_ij = [[1/k] * len(points)] * k  #this probably isn't right.  Set the probability to some non zero number
-    mu = centers
-    pi = calc_initial_weights(predictions, k)
+    mu = np.asarray(centers)
+    pi =calc_initial_weights(predictions, k)
 
     iteration = 0
     converged = False
@@ -72,11 +84,11 @@ def cluster_pixels(points, k):
         print("EM iteration {}".format(iteration))
 
         #E step
-        w_ij = expectation(points, mu, pi)
+        w_ij = expectation(np.asarray(points), mu, pi)
 
         #M step
         old_mu = mu
-        mu, pi = maximization(points, w_ij)
+        mu, pi = maximization(np.asarray(points), w_ij, k)
 
         #measure change
         change = measure_center_change(old_mu, mu)
@@ -87,52 +99,60 @@ def cluster_pixels(points, k):
 
     #assign predictions
     print("   Assigning Clusters...")
-    return predictions, centers
+    for doc in range(0, len(predictions)):
+        index, value = max(enumerate(w_ij[doc]), key=operator.itemgetter(1))
+        predictions[doc] = index
+    return predictions, mu
 
-def expectation(points, cluster_centers, cluster_weights):
+def expectation(data, mu, pi):
     print("   Estimation...")
     # assign every data point to its most likely cluster
-    
-    return dataFrame
+    n = data.shape[0]
+    d = data.shape[1]
+    k = len(pi)
 
-def maximization(points, w_ij, n):
+    h1 = np.multiply(data,data)
+    h1 = np.matmul(h1,np.ones((d,k)))
+    h2 = np.matmul(np.ones((n,d)), np.multiply(mu,mu).T)
+    h3 = np.matmul(data,mu.T)
+    H = -0.5*(np.subtract(np.add(h1,h2),2*h3))
+
+    P = np.matmul(np.ones((n,1)),pi.T)
+    E = np.multiply(np.exp(H),P)
+    F = np.matmul(E,np.ones((k,k)))
+    F = np.add(F,0.01)
+    W = np.divide(E,F)
+    return W
+
+
+def maximization(data, W, k, alpha=10):
     print("   Maximization...")
-    new_mu = []
-    new_pi = []
+    # new_mu = []
+    # new_pi = np.zeros((k,1))
 
-    for j in range(0, 2):
-        print("w_ij[{}] = {}".format(j, column(w_ij,j)))
-        sum_wi = sum(column(w_ij,j))
-        print("sum_wi {}".format(sum_wi))
-
-        #calculate new centers
-        mu = sum(column(points,j)*sum_wi)/sum_wi
-        print("new mu[{}] = {}".format(j, mu))
-        new_mu.append(mu)
-
-        #calculate new weights
-        pi = sum_wi/n 
-        print("new pi[{}] = {}".format(j, pi))
-        new_pi.append(pi)
-    
-    return new_mu, new_pi
-
-def logsumexp(X):
-    x_max = X.max(1)
-    return x_max + np.log(np.exp(X - x_max[:, None]).sum(1))
+    n = data.shape[0]
+    d = data.shape[1]
+    pi_new = np.log(np.matmul(W.T,np.ones((n,1))))
+    pi_new = np.subtract(pi_new, np.log(n))
+    W = np.multiply(alpha,W)
+    mu_new = np.matmul(W.T,data)
+    mu_new = np.divide(mu_new,np.matmul(W.T,np.ones((n,d))))
+    pi_new = np.matmul(W.T,np.ones((n,1)))
+    pi_new = np.divide(pi_new,n)
+    return mu_new,pi_new 
 
 def measure_center_change(old_mu, new_mu):
-    dist = numpy.linalg.norm(new_mu-old_mu)
+    dist = np.linalg.norm(new_mu-old_mu)
     return dist
 
 def calc_initial_weights(cluster_assignments, k):
     print("   Calculating initial weights...")
-    weights =[]
+    weights = np.zeros((k,1))
     N = len(cluster_assignments)
     for i in range(0, k):
         mask = [(pix==i) for pix in cluster_assignments]
         num_pixels = sum(mask)
-        weights.append(num_pixels/N)
+        weights[i,0]= num_pixels/N
     return weights
 
 def initialize(pixel_vectors, k):
@@ -172,6 +192,7 @@ def update_pixels(cluster_assignments, mean_colors):
 if __name__ == "__main__":
     print("##### HW7 Image Segmentation #####")
 
+    #reduce_image("./images/RobertMixed03.jpg", 3)
     reduce_image("./images/RobertMixed03.jpg", 10)
     #reduce_image("./images/RobertMixed03.jpg", 20)
     #reduce_image("./images/RobertMixed03.jpg", 50)

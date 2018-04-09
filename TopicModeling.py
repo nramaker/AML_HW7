@@ -4,9 +4,8 @@ from random import *
 #from scipy.stats import multinomial
 import matplotlib.pyplot as plt
 
-#TODO: set this back to 30. Setting k=2 so that it takes less time while we iterate
 #k = 30
-k=10
+k=30
 
 def load_vocab():
     file = "./NIPS/vocab.nips.txt"
@@ -28,8 +27,8 @@ def load_data():
     #nips = nips.add(1)
     nips_data = nips.values
 
-    print(str(nips.shape[0]) + " unique documents")
-    print(str(nips.shape[1]) + " unique words")
+    # print(str(nips.shape[0]) + " unique documents")
+    # print(str(nips.shape[1]) + " unique words")
     nips.head()
     return nips
 
@@ -139,12 +138,6 @@ if __name__ == "__main__":
     converged = False
     while( iteration < max_iters and converged==False):
         print("### Performing E/M algorithm: iteration {}".format(iteration))
-
-        #pis are the cluster weights 
-        #mus are the cluster centers
-        #wi_j is the cluster assignements
-        #prior_probs is prior cluster probabilities 
-        # word_counts is our data
 
         # E - step
         print("   E-step")
