@@ -48,16 +48,6 @@ def get_pixels_from_image(image):
     print("   Image is {} by {}".format(width,height))
     return list(pixels), width, height
 
-# probability that a point came from a Guassian with given parameters
-# note that the covariance must be diagonal for this to work
-#def prob(val, mu, sig, lam):
-def prob(val, mu, lam):
-  p = lam
-  for i in range(len(val)):
-    p *= norm.pdf(val[i], mu[i])
-    #p *= norm.pdf(val[i], mu[i], sig[i][i])
-  return p
-
 def cluster_pixels(points, k):
     print("### Performing EM clustering, k={}".format(k))
 
@@ -69,12 +59,11 @@ def cluster_pixels(points, k):
     print("   Refining with EM algorithm")
 
     #setup
-    max_iter = 10
-    min_change = 0.01
+    max_iter = 100
+    min_change = 0.1
     
     #initial values
-    #w_ij = matrix(1/k, len(points), k)
-    w_ij = [[1/k] * len(points)] * k  #this probably isn't right.  Set the probability to some non zero number
+    w_ij = [[1/k] * len(points)] * k  
     mu = np.asarray(centers)
     pi =calc_initial_weights(predictions, k)
 
@@ -193,12 +182,12 @@ if __name__ == "__main__":
     print("##### HW7 Image Segmentation #####")
 
     #reduce_image("./images/RobertMixed03.jpg", 3)
-    reduce_image("./images/RobertMixed03.jpg", 10)
+    #reduce_image("./images/RobertMixed03.jpg", 10)
     #reduce_image("./images/RobertMixed03.jpg", 20)
     #reduce_image("./images/RobertMixed03.jpg", 50)
-    # reduce_image("./images/smallstrelitzia.jpg", 10)
-    # reduce_image("./images/smallstrelitzia.jpg", 20)
-    # reduce_image("./images/smallstrelitzia.jpg", 50)
-    # reduce_image("./images/smallsunset.jpg", 10)
-    # reduce_image("./images/smallsunset.jpg", 20)
+    #reduce_image("./images/smallstrelitzia.jpg", 10)
+    #reduce_image("./images/smallstrelitzia.jpg", 20)
+    #reduce_image("./images/smallstrelitzia.jpg", 50)
+    reduce_image("./images/smallsunset.jpg", 10)
+    #reduce_image("./images/smallsunset.jpg", 20)
     # reduce_image("./images/smallsunset.jpg", 50)

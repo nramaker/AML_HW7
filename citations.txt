@@ -9,3 +9,4 @@ column function - https://stackoverflow.com/questions/903853/how-do-you-extract-
 euclidean distance python = https://stackoverflow.com/questions/1401712/how-can-the-euclidean-distance-be-calculated-with-numpy
 
 gaussian em - https://github.com/mcdickenson/em-gaussian/blob/master/em-gaussian.py
+https://stackoverflow.com/questions/268272/getting-key-with-maximum-value-in-dictionary
